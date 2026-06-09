@@ -55,6 +55,19 @@ drop this block into `~/.claude/settings.json` yourself:
 }
 ```
 
+## Uninstall
+
+```bash
+context-check uninstall
+npm uninstall -g context-check
+```
+
+The first command removes the `statusLine` block from `~/.claude/settings.json`
+(saving the original to `.bak` first). It refuses to remove a different
+statusLine without `--force`, in case you've replaced ours with your own. The
+second removes the binary. Run the subcommand *before* the npm uninstall —
+once the binary's gone, the subcommand goes with it.
+
 ## Recipe: show the project name alongside the gauge
 
 The base statusline shows only the model and the gauge. If you also want the

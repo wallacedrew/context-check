@@ -14,6 +14,11 @@ async function main() {
     return;
   }
 
+  if (cliArgs[0] === 'uninstall') {
+    await require('./uninstall').run(cliArgs.slice(1));
+    return;
+  }
+
   const lineMode = cliArgs.includes('--line');
   const demoMode = cliArgs.includes('--demo');
 
