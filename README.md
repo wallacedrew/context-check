@@ -28,19 +28,23 @@ now.**
 
 ```bash
 npm install -g github:wallacedrew/context-check
+context-check install
 ```
 
-That puts `context-check` on your `PATH`. Requires Node 18+.
+Two lines. The first puts `context-check` on your `PATH` (requires Node 18+).
+The second writes the statusline block into `~/.claude/settings.json` (saving a
+`.bak` of whatever was there). Reload Claude Code and the gauge appears.
 
-To pin a specific version, append `#v1.0.0` (or any tag/branch/SHA):
+Pin a specific version with `#v1.0.0` (or any tag/branch/SHA) on the install
+URL:
 
 ```bash
 npm install -g github:wallacedrew/context-check#v1.0.0
 ```
 
-## Statusline setup (the base case — do this once)
-
-Add to `~/.claude/settings.json`:
+If `context-check install` finds a different `statusLine` already configured,
+it refuses and points you at `--force`. If you'd rather configure by hand,
+drop this block into `~/.claude/settings.json` yourself:
 
 ```json
 {
@@ -50,8 +54,6 @@ Add to `~/.claude/settings.json`:
   }
 }
 ```
-
-Reload Claude Code. Done.
 
 ## Recipe: show the project name alongside the gauge
 

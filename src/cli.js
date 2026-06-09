@@ -8,6 +8,12 @@ const STDIN_TIMEOUT_MS = 200;
 // in a statusline and must NEVER break the prompt.
 async function main() {
   const cliArgs = process.argv.slice(2);
+
+  if (cliArgs[0] === 'install') {
+    await require('./install').run(cliArgs.slice(1));
+    return;
+  }
+
   const lineMode = cliArgs.includes('--line');
   const demoMode = cliArgs.includes('--demo');
 
