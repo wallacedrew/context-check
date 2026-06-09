@@ -1,0 +1,36 @@
+{
+  "name": "context-check",
+  "version": "1.0.0",
+  "description": "Claude Code statusline gauge — context load read at a glance.",
+  "keywords": [
+    "claude-code",
+    "statusline",
+    "cli",
+    "context",
+    "tokens"
+  ],
+  "homepage": "https://github.com/wallacedrew/context-check#readme",
+  "bugs": {
+    "url": "https://github.com/wallacedrew/context-check/issues"
+  },
+  "license": "MIT",
+  "author": "Wallace Drew <wallace.drew@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wallacedrew/context-check.git"
+  },
+  "bin": {
+    "context-check": "src/context-check.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ]
+}
