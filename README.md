@@ -27,15 +27,15 @@ now.**
 ## Install
 
 ```bash
-npm install -g context-check
+npm install -g github:wallacedrew/context-check
 ```
 
 That puts `context-check` on your `PATH`. Requires Node 18+.
 
-Want the latest unreleased main branch (or your own fork)?
+To pin a specific version, append `#v1.0.0` (or any tag/branch/SHA):
 
 ```bash
-npm install -g github:wallacedrew/context-check
+npm install -g github:wallacedrew/context-check#v1.0.0
 ```
 
 ## Statusline setup (the base case — do this once)
