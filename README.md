@@ -24,6 +24,20 @@ now.**
 
 ---
 
+## Why not just `/context`?
+
+Claude Code already ships two adjacent features. `/context` prints the
+current token breakdown on demand, and **auto-compact** kicks in at
+`auto_compact_threshold_percent` (default 80%) to truncate before the window
+overruns.
+
+What Claude doesn't ship: a passive, always-on visual gauge with zones and
+drift measurement. `/context` is poll-the-data, auto-compact is the
+last-second safety net — neither tells you mid-conversation that you're
+sliding from `sharp` into `drift risk`. That's the gap context-check fills.
+
+---
+
 ## Install
 
 ```bash
