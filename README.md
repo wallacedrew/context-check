@@ -147,79 +147,21 @@ echo '{"model":{"display_name":"Opus 4.8"},"context_window":{"used_percentage":6
 
 ---
 
-## What it measures
-
-Two independent failure modes, not one:
-
-- **dilution** — high token fill; real instructions compete with bulk content
-  and specifics get flattened.
-- **drift** — long conversation arc; earliest instructions decay regardless of
-  fill because they are far back.
-
-A single "% full" bar conflates them. You can be 30% full but 60 turns deep
-(drift), or 85% full at turn 3 (dilution). `context-check` reads both axes:
-fill (measured from the session JSON) and turn depth (counted from the
-transcript file).
-
-## What it does NOT measure
-
-**This tool measures budget, not cognition.** It cannot observe a model
-actually degrading. The zone label is a hypothesis layered on measured fill —
-specifically:
-
-```
-strain = (fill / 100) * 0.7 + min(1, turns / 80) * 0.3
-```
-
-The `0.7 / 0.3` split is a guess. It is labeled as such in the full-gauge
-output. Don't treat the zone label as a measurement of model quality; treat it
-as a yellow/red flag on the resource budget.
-
 ## Zones
 
-| Zone | Condition | What to do |
+The bar's color tells you which of six zones you're in:
+
+| Zone | Color | What to do |
 |---|---|---|
-| `crisp` (green) | strain < 0.22 | nothing |
-| `sharp` (green) | strain ≥ 0.22 | nothing — recent context dominant |
-| `drift risk` (amber) | strain ≥ 0.42 | restate hard constraints |
-| `dilution` (red) | strain ≥ 0.62 | consider `/compact` soon |
-| `compaction wall` (red) | fill ≥ 88% | `/compact` now |
-| `blind` (dim) | no usage data yet | wait for next API call |
+| `crisp` | green | nothing — full headroom |
+| `sharp` | green | nothing — recent context dominant |
+| `drift risk` | amber | restate hard constraints |
+| `dilution` | red | consider `/compact` soon |
+| `compaction wall` | red | `/compact` now |
+| `blind` | dim | no usage data yet — wait for next API call |
 
----
-
-## Data contract
-
-Claude Code pipes a JSON object to the statusline command via **stdin** on
-every update. `context-check` reads:
-
-| Field | Used for |
-|---|---|
-| `context_window.used_percentage` | Primary fill signal (preferred) |
-| `current_usage.{input,cache_read,cache_creation}_input_tokens` | Fallback fill |
-| `context_window.context_window_size` | Token-to-percent conversion |
-| `context_window.auto_compact_threshold_percent` | When to flag ⚠ (default 80) |
-| `transcript_path` | Turn count (user + assistant records) |
-| `model.display_name` | Header label |
-
-For the authoritative schema, see
-<https://code.claude.com/docs/en/statusline>.
-
-## Known blind spots
-
-- **Pre-first-call & just-compacted sessions are blind.**
-  `used_percentage` / `current_usage` is `null` before the first API call,
-  and again immediately after `/compact` until the next call repopulates it.
-  The gauge will show `--%` and zone `blind`. This is expected, not a bug —
-  the data simply does not exist yet.
-- **Transcript-based fill (v2) is lossy.** When `used_percentage` is
-  unavailable on platforms like Bedrock, falling back to transcript parsing
-  misses MCP tool definitions (~30–50k tokens) and CLAUDE.md content. So it
-  reads low. v1 does not attempt this; it goes `blind` instead.
-- **An open Claude Code bug** has occasionally caused
-  `context_window.used_percentage` to carry cumulative session tokens rather
-  than current-window usage, producing absurd values (e.g. 340%). The tool
-  clamps to 0–100 and does not crash.
+A row showing `⚠` means you've crossed Claude Code's auto-compact threshold
+(80% by default); auto-compact will kick in soon.
 
 ## Hard guarantees
 
@@ -244,19 +186,16 @@ to count from.
 
 **Does it work on Bedrock (or any provider without `used_percentage`)?**
 Partially. When `context_window.used_percentage` isn't populated the gauge
-falls through to `current_usage.*_input_tokens` if those are present.
-If neither is available the row shows `--% blind` and the zone is `blind`
-— this is documented in *Known blind spots* above, not a crash. v2 plans
-a transcript-parsing fill fallback for these environments.
+falls through to `current_usage.*_input_tokens`. If neither is available
+the row shows `--% blind`. This is expected behavior, not a crash —
+the data simply isn't populated yet.
+
+**Something else?**
+File an issue at <https://github.com/wallacedrew/context-check/issues>.
 
 ---
 
-## Roadmap
+## Internals
 
-- **v1** (this build) — CLI + statusline gauge with live turn counting.
-- v2 — transcript-parsing fill fallback for Bedrock users (no `/context`).
-- v3 — interactive two-axis map UI fed by real session data.
-
-(Explicitly out of scope: a skill that asks the model to self-report its
-own coordinates. A degrading system is the least reliable narrator of its
-own degradation. Measurement stays external.)
+Source layout, data contract, edge cases, roadmap, and how to run the
+tests / cut a release live in [DEVELOPMENT.md](DEVELOPMENT.md).
