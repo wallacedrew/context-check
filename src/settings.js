@@ -5,8 +5,34 @@ const { existsSync } = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 
-const STATUSLINE_COMMAND = 'context-check --line';
-const DESIRED_STATUSLINE = { type: 'command', command: STATUSLINE_COMMAND };
+const BASIC_COMMAND = 'context-check --line';
+const OUR_COMMANDS = new Set([BASIC_COMMAND]);
+
+function commandFor(_options) {
+  return BASIC_COMMAND;
+}
+
+function statusLineFor(options) {
+  return { type: 'command', command: commandFor(options) };
+}
+
+function isOurCommand(command) {
+  return typeof command === 'string' && OUR_COMMANDS.has(command);
+}
+
+function isOurStatusLine(settings) {
+  const current = settings.statusLine;
+  return Boolean(current) && current.type === 'command' && isOurCommand(current.command);
+}
+
+function isAlreadyConfigured(settings, options) {
+  const current = settings.statusLine;
+  return Boolean(current) && current.type === 'command' && current.command === commandFor(options);
+}
+
+function hasConflictingStatusLine(settings) {
+  return settings.statusLine != null && !isOurStatusLine(settings);
+}
 
 function resolveSettingsPath(args) {
   const flagIndex = args.indexOf('--settings');
@@ -25,20 +51,15 @@ async function loadSettings(settingsPath) {
   }
 }
 
-function isAlreadyConfigured(settings) {
-  const current = settings.statusLine;
-  return current && current.type === 'command' && current.command === STATUSLINE_COMMAND;
-}
-
-function hasConflictingStatusLine(settings) {
-  return settings.statusLine != null && !isAlreadyConfigured(settings);
-}
-
 module.exports = {
-  STATUSLINE_COMMAND,
-  DESIRED_STATUSLINE,
-  resolveSettingsPath,
-  loadSettings,
+  BASIC_COMMAND,
+  OUR_COMMANDS,
+  commandFor,
+  statusLineFor,
+  isOurCommand,
+  isOurStatusLine,
   isAlreadyConfigured,
   hasConflictingStatusLine,
+  resolveSettingsPath,
+  loadSettings,
 };

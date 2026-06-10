@@ -5,7 +5,7 @@ const { writeFile } = require('node:fs/promises');
 const {
   resolveSettingsPath,
   loadSettings,
-  isAlreadyConfigured,
+  isOurStatusLine,
   hasConflictingStatusLine,
 } = require('./settings');
 
@@ -48,7 +48,7 @@ async function run(args) {
   delete next.statusLine;
   await writeFile(settingsPath, JSON.stringify(next, null, 2) + '\n');
 
-  const removedOurs = isAlreadyConfigured(settings);
+  const removedOurs = isOurStatusLine(settings);
   print(
     `context-check uninstall: removed statusLine from ${settingsPath}.\n` +
     `  backup: ${settingsPath}.bak\n` +

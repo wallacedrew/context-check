@@ -4,7 +4,7 @@ const { writeFile, mkdir } = require('node:fs/promises');
 const path = require('node:path');
 
 const {
-  DESIRED_STATUSLINE,
+  statusLineFor,
   resolveSettingsPath,
   loadSettings,
   isAlreadyConfigured,
@@ -14,6 +14,7 @@ const {
 async function run(args) {
   const settingsPath = resolveSettingsPath(args);
   const force = args.includes('--force');
+  const options = {};
 
   const loadResult = await loadSettings(settingsPath);
   if (loadResult.error) {
@@ -24,7 +25,7 @@ async function run(args) {
 
   const { settings, existed } = loadResult;
 
-  if (isAlreadyConfigured(settings)) {
+  if (isAlreadyConfigured(settings, options)) {
     print(`context-check install: statusLine already configured in ${settingsPath}; nothing to do`);
     return;
   }
@@ -45,7 +46,7 @@ async function run(args) {
     await mkdir(path.dirname(settingsPath), { recursive: true });
   }
 
-  const next = { ...settings, statusLine: DESIRED_STATUSLINE };
+  const next = { ...settings, statusLine: statusLineFor(options) };
   await writeFile(settingsPath, JSON.stringify(next, null, 2) + '\n');
 
   print(
