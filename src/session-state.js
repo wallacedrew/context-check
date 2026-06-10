@@ -1,5 +1,7 @@
 'use strict';
 
+const path = require('node:path');
+
 const { ANSI, color, dim } = require('./ansi');
 const { isFiniteNumber, isNonEmptyString, clampPercent } = require('./predicates');
 const FillPercent = require('./fill-percent');
@@ -15,7 +17,7 @@ const LINE_BAR_WIDTH = 10;
 const DEFAULT_AUTO_COMPACT_THRESHOLD = 80;
 
 class SessionState {
-  constructor({ model, fill, source, turns, zone, autoCompactThreshold, autoCompactReached }) {
+  constructor({ model, fill, source, turns, zone, autoCompactThreshold, autoCompactReached, dir }) {
     this.model = model;
     this.fill = fill;
     this.source = source;
@@ -23,9 +25,10 @@ class SessionState {
     this.zone = zone;
     this.autoCompactThreshold = autoCompactThreshold;
     this.autoCompactReached = autoCompactReached;
+    this.dir = dir;
   }
 
-  static fromInput(input) {
+  static fromInput(input, options = {}) {
     const model = resolveModel(input);
     const { fill, source } = resolveFill(input);
     const turns = resolveTurns(input && input.transcript_path);
@@ -33,10 +36,11 @@ class SessionState {
     const zone = Zone.resolveFor(fill, strain);
     const autoCompactThreshold = resolveAutoCompactThreshold(input);
     const autoCompactReached = fill.atLeast(autoCompactThreshold);
-    return new SessionState({ model, fill, source, turns, zone, autoCompactThreshold, autoCompactReached });
+    const dir = options.withDir ? resolveDir(input) : null;
+    return new SessionState({ model, fill, source, turns, zone, autoCompactThreshold, autoCompactReached, dir });
   }
 
-  static demo() {
+  static demo(options = {}) {
     return new SessionState({
       model: 'Opus 4.8 (demo)',
       fill: FillPercent.of(62),
@@ -45,6 +49,7 @@ class SessionState {
       zone: Zone.DRIFT,
       autoCompactThreshold: DEFAULT_AUTO_COMPACT_THRESHOLD,
       autoCompactReached: false,
+      dir: options.withDir ? 'my-project' : null,
     });
   }
 
@@ -54,7 +59,7 @@ class SessionState {
 
   renderFull() {
     const lines = [];
-    lines.push(this.model);
+    lines.push(prefixWithDir(this.dir, this.model));
     lines.push(`${renderBar(FULL_BAR_WIDTH, this.fill, this.zone)}  ${this.fill.label()}${this.source.tag()}`);
     lines.push(dim(`turns: ${this.turns.label()}`));
     lines.push(`zone: ${this.zone.paint(this.zone.name)}`);
@@ -67,8 +72,20 @@ class SessionState {
   }
 
   renderLine() {
-    return `${this.model} ${renderBar(LINE_BAR_WIDTH, this.fill, this.zone)} ${this.fill.label()} ${this.zone.paint(this.zone.name)}${warnSuffix(this.autoCompactReached)}`;
+    const head = prefixWithDir(this.dir, this.model);
+    return `${head} ${renderBar(LINE_BAR_WIDTH, this.fill, this.zone)} ${this.fill.label()} ${this.zone.paint(this.zone.name)}${warnSuffix(this.autoCompactReached)}`;
   }
+}
+
+function prefixWithDir(dir, head) {
+  return dir ? `${dir} | ${head}` : head;
+}
+
+function resolveDir(input) {
+  const workspace = input && input.workspace;
+  const current = workspace && workspace.current_dir;
+  if (!isNonEmptyString(current)) return null;
+  return path.basename(current);
 }
 
 function resolveModel(input) {

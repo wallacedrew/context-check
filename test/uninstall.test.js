@@ -115,6 +115,22 @@ test('uninstall: --force removes any statusLine', async () => {
   assert.equal(settings.theme, 'light');
 });
 
+test('uninstall recognizes the --with-dir variant as ours and removes without --force', async () => {
+  const dir = await makeTmpDir();
+  const settingsPath = path.join(dir, 'settings.json');
+  await writeFile(settingsPath, JSON.stringify({
+    statusLine: { type: 'command', command: 'context-check --line --with-dir' },
+    theme: 'light',
+  }, null, 2));
+
+  const { exitCode } = await runBin(['uninstall', '--settings', settingsPath]);
+
+  assert.equal(exitCode, 0);
+  const settings = JSON.parse(await readFile(settingsPath, 'utf8'));
+  assert.equal(settings.statusLine, undefined);
+  assert.equal(settings.theme, 'light');
+});
+
 test('uninstall: malformed JSON aborts with exit 1 and leaves file untouched', async () => {
   const dir = await makeTmpDir();
   const settingsPath = path.join(dir, 'settings.json');

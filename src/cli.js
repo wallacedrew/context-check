@@ -21,9 +21,10 @@ async function main() {
 
   const lineMode = cliArgs.includes('--line');
   const demoMode = cliArgs.includes('--demo');
+  const withDir = cliArgs.includes('--with-dir');
 
   if (demoMode) {
-    renderOrReport(SessionState.demo(), lineMode);
+    renderOrReport(SessionState.demo({ withDir }), lineMode);
     return;
   }
 
@@ -33,7 +34,7 @@ async function main() {
   const input = parseInputOrReport(rawStdin);
   if (input === null) return;
 
-  const state = buildStateOrReport(input);
+  const state = buildStateOrReport(input, { withDir });
   if (state === null) return;
 
   renderOrReport(state, lineMode);
@@ -60,8 +61,8 @@ function parseInputOrReport(rawStdin) {
   catch (_) { reportError('invalid JSON on stdin'); return null; }
 }
 
-function buildStateOrReport(input) {
-  try { return SessionState.fromInput(input); }
+function buildStateOrReport(input, options) {
+  try { return SessionState.fromInput(input, options); }
   catch (_) { reportError('could not read session state'); return null; }
 }
 

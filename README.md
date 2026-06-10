@@ -56,6 +56,21 @@ Two lines. The first puts `context-check` on your `PATH` (requires Node 18+).
 The second writes the statusline block into `~/.claude/settings.json` (saving a
 `.bak` of whatever was there). Reload Claude Code and the gauge appears.
 
+### Also show the project folder name
+
+Add `--with-dir` to install, and the row gets prefixed with the current
+project folder:
+
+```bash
+context-check install --with-dir
+```
+
+You'll see `my-project | Opus 4.8 ▓▓▓▓░░░░░░ 42% sharp` instead of just
+the model + gauge. Re-run `context-check install` (without the flag) to
+switch back; no `--force` needed either way.
+
+### Other install knobs
+
 Pin a specific version with `#v1.1.0` (or any tag/branch/SHA) on the install
 URL:
 
@@ -63,9 +78,10 @@ URL:
 npm install -g github:wallacedrew/context-check#v1.1.0
 ```
 
-If `context-check install` finds a different `statusLine` already configured,
-it refuses and points you at `--force`. If you'd rather configure by hand,
-drop this block into `~/.claude/settings.json` yourself:
+If `context-check install` finds a *different* `statusLine` already
+configured (something that isn't ours), it refuses and points you at
+`--force`. If you'd rather configure by hand, drop this block into
+`~/.claude/settings.json` yourself:
 
 ```json
 {
@@ -84,55 +100,10 @@ npm uninstall -g context-check
 ```
 
 The first command removes the `statusLine` block from `~/.claude/settings.json`
-(saving the original to `.bak` first). It refuses to remove a different
-statusLine without `--force`, in case you've replaced ours with your own. The
-second removes the binary. Run the subcommand *before* the npm uninstall —
+(saving the original to `.bak` first). It recognizes both variants of our
+command (with or without `--with-dir`) and removes either without `--force`.
+The second removes the binary. Run the subcommand *before* the npm uninstall —
 once the binary's gone, the subcommand goes with it.
-
-## Recipe: show the project name alongside the gauge
-
-The base statusline shows only the model and the gauge. If you also want the
-current project folder name on the same row, point `statusLine.command` at a
-tiny wrapper script.
-
-Create `~/.claude/bin/statusline.sh`:
-
-```bash
-#!/usr/bin/env bash
-input=$(cat)
-dir=$(printf '%s' "$input" | node -e '
-let buf = "";
-process.stdin.on("data", c => buf += c);
-process.stdin.on("end", () => {
-  try {
-    const j = JSON.parse(buf);
-    const d = (j && j.workspace && j.workspace.current_dir) || "";
-    if (d) process.stdout.write(require("path").basename(d));
-  } catch {}
-});
-' 2>/dev/null)
-gauge=$(printf '%s' "$input" | context-check --line 2>/dev/null)
-if [ -n "$dir" ] && [ -n "$gauge" ]; then
-  printf '%s | %s\n' "$dir" "$gauge"
-elif [ -n "$gauge" ]; then
-  printf '%s\n' "$gauge"
-elif [ -n "$dir" ]; then
-  printf '%s\n' "$dir"
-fi
-```
-
-`chmod +x ~/.claude/bin/statusline.sh`, then in `~/.claude/settings.json`:
-
-```json
-{
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/bin/statusline.sh"
-  }
-}
-```
-
-You'll see `my-project | Opus 4.8 ▓▓▓▓░░░░░░ 42% sharp`.
 
 ## On-demand check
 

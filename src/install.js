@@ -14,7 +14,7 @@ const {
 async function run(args) {
   const settingsPath = resolveSettingsPath(args);
   const force = args.includes('--force');
-  const options = {};
+  const options = { withDir: args.includes('--with-dir') };
 
   const loadResult = await loadSettings(settingsPath);
   if (loadResult.error) {

@@ -111,6 +111,58 @@ test('install: --force overwrites an existing different statusLine', async () =>
   assert.deepEqual(settings.statusLine, DESIRED_STATUSLINE);
 });
 
+test('install --with-dir writes the with-dir variant of the statusLine command', async () => {
+  const dir = await makeTmpDir();
+  const settingsPath = path.join(dir, 'settings.json');
+
+  const { exitCode } = await runBin(['install', '--with-dir', '--settings', settingsPath]);
+
+  assert.equal(exitCode, 0);
+  const settings = JSON.parse(await readFile(settingsPath, 'utf8'));
+  assert.deepEqual(settings.statusLine, { type: 'command', command: 'context-check --line --with-dir' });
+});
+
+test('install --with-dir is idempotent when the with-dir variant is already configured', async () => {
+  const dir = await makeTmpDir();
+  const settingsPath = path.join(dir, 'settings.json');
+  await writeFile(settingsPath, JSON.stringify({
+    statusLine: { type: 'command', command: 'context-check --line --with-dir' },
+  }, null, 2));
+
+  const { stdout, exitCode } = await runBin(['install', '--with-dir', '--settings', settingsPath]);
+
+  assert.equal(exitCode, 0);
+  assert.match(stdout, /already configured/i);
+});
+
+test('install --with-dir swaps a basic configuration to the with-dir variant without --force', async () => {
+  const dir = await makeTmpDir();
+  const settingsPath = path.join(dir, 'settings.json');
+  await writeFile(settingsPath, JSON.stringify({
+    statusLine: { type: 'command', command: 'context-check --line' },
+  }, null, 2));
+
+  const { exitCode } = await runBin(['install', '--with-dir', '--settings', settingsPath]);
+
+  assert.equal(exitCode, 0);
+  const settings = JSON.parse(await readFile(settingsPath, 'utf8'));
+  assert.deepEqual(settings.statusLine, { type: 'command', command: 'context-check --line --with-dir' });
+});
+
+test('install (no --with-dir) swaps a with-dir configuration back to basic without --force', async () => {
+  const dir = await makeTmpDir();
+  const settingsPath = path.join(dir, 'settings.json');
+  await writeFile(settingsPath, JSON.stringify({
+    statusLine: { type: 'command', command: 'context-check --line --with-dir' },
+  }, null, 2));
+
+  const { exitCode } = await runBin(['install', '--settings', settingsPath]);
+
+  assert.equal(exitCode, 0);
+  const settings = JSON.parse(await readFile(settingsPath, 'utf8'));
+  assert.deepEqual(settings.statusLine, { type: 'command', command: 'context-check --line' });
+});
+
 test('install: malformed JSON aborts with exit 1 and leaves file untouched', async () => {
   const dir = await makeTmpDir();
   const settingsPath = path.join(dir, 'settings.json');
