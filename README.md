@@ -49,11 +49,11 @@ Two lines. The first puts `context-check` on your `PATH` (requires Node 18+).
 The second writes the statusline block into `~/.claude/settings.json` (saving a
 `.bak` of whatever was there). Reload Claude Code and the gauge appears.
 
-Pin a specific version with `#v1.0.0` (or any tag/branch/SHA) on the install
+Pin a specific version with `#v1.1.0` (or any tag/branch/SHA) on the install
 URL:
 
 ```bash
-npm install -g github:wallacedrew/context-check#v1.0.0
+npm install -g github:wallacedrew/context-check#v1.1.0
 ```
 
 If `context-check install` finds a different `statusLine` already configured,
