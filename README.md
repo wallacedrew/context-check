@@ -4,6 +4,15 @@ A statusline gauge for [Claude Code](https://code.claude.com/) that gives you a
 glanceable read on context load: how full the window is, and how long the
 conversation arc has grown. Zero dependencies, Node 18+.
 
+```
+Opus 4.8 ▓▓▓▓░░░░░░ 42% sharp           ← plenty of headroom
+Opus 4.8 ▓▓▓▓▓▓▓░░░ 71% drift risk      ← restate constraints
+Opus 4.8 ▓▓▓▓▓▓▓▓▓░ 91% compaction wall ⚠ ← /compact now
+```
+
+The colored row sits at the bottom of your prompt and updates every turn.
+Green / amber / red in a real terminal.
+
 ---
 
 ## The story
