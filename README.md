@@ -1,5 +1,7 @@
 # context-check
 
+[![tests](https://github.com/wallacedrew/context-check/actions/workflows/test.yml/badge.svg)](https://github.com/wallacedrew/context-check/actions/workflows/test.yml)
+
 A statusline gauge for [Claude Code](https://code.claude.com/) that gives you a
 glanceable read on context load: how full the window is, and how long the
 conversation arc has grown. Zero dependencies, Node 18+.
@@ -229,6 +231,27 @@ For the authoritative schema, see
   readable line and exit 0.
 - **Never hangs.** stdin read times out at 200ms.
 - **Respects `NO_COLOR`.** Set the env var to disable ANSI escape codes.
+
+---
+
+## FAQ
+
+**Does it phone home?**
+No. Pure stdin processing — read JSON, render to stdout, exit. No network
+calls anywhere in the source. The tarball is `src/*.js` (~10 files, ~10 kB
+total) plus README and LICENSE; the whole tool is readable in a few minutes.
+
+**Does `/resume` work?**
+Yes. Turn depth is counted by tailing `transcript_path` from the session
+JSON, so resuming an old session just hands the gauge a longer transcript
+to count from.
+
+**Does it work on Bedrock (or any provider without `used_percentage`)?**
+Partially. When `context_window.used_percentage` isn't populated the gauge
+falls through to `current_usage.*_input_tokens` if those are present.
+If neither is available the row shows `--% blind` and the zone is `blind`
+— this is documented in *Known blind spots* above, not a crash. v2 plans
+a transcript-parsing fill fallback for these environments.
 
 ---
 
