@@ -33,17 +33,17 @@ async function main() {
   const rawStdin = await loadStdinOrAdvise();
   if (rawStdin === null) return;
 
-  const input = tryOr(() => JSON.parse(rawStdin), 'invalid JSON on stdin');
+  const input = tryOrReport(() => JSON.parse(rawStdin), 'invalid JSON on stdin');
   if (input === null) return;
 
-  const state = tryOr(() => SessionState.fromInput(input, { withDir }), 'could not read session state');
+  const state = tryOrReport(() => SessionState.fromInput(input, { withDir }), 'could not read session state');
   if (state === null) return;
 
   renderState(state, lineMode);
 }
 
 function renderState(state, lineMode) {
-  tryOr(() => process.stdout.write(new SessionStateRenderer(state).render(lineMode)), 'render error');
+  tryOrReport(() => process.stdout.write(new SessionStateRenderer(state).render(lineMode)), 'render error');
 }
 
 async function loadStdinOrAdvise() {
@@ -62,7 +62,7 @@ async function readStdinOrNull() {
   catch (_) { return null; }
 }
 
-function tryOr(action, errorMessage) {
+function tryOrReport(action, errorMessage) {
   try { return action(); }
   catch (_) { reportError(errorMessage); return null; }
 }
