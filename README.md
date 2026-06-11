@@ -56,6 +56,10 @@ Two lines. The first puts `context-check` on your `PATH` (requires Node 18+).
 The second writes the statusline block into `~/.claude/settings.json` (saving a
 `.bak` of whatever was there). Reload Claude Code and the gauge appears.
 
+> **Using `nodenv` (or another shim-based version manager)?** Run
+> `nodenv rehash` after the `npm install` so the shim picks up the new
+> binary — otherwise `context-check install` will be "command not found".
+
 ### Also show the project folder name
 
 Add `--with-dir` to install, and the row gets prefixed with the current
