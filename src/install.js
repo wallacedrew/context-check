@@ -9,6 +9,7 @@ const {
   loadSettings,
   isAlreadyConfigured,
   hasConflictingStatusLine,
+  backupPathFor,
 } = require('./settings');
 
 async function run(args) {
@@ -41,7 +42,7 @@ async function run(args) {
   }
 
   if (existed) {
-    await writeFile(settingsPath + '.bak', JSON.stringify(settings, null, 2) + '\n');
+    await writeFile(backupPathFor(settingsPath), JSON.stringify(settings, null, 2) + '\n');
   } else {
     await mkdir(path.dirname(settingsPath), { recursive: true });
   }
@@ -51,7 +52,7 @@ async function run(args) {
 
   print(
     `context-check install: wrote statusLine to ${settingsPath}.\n` +
-    (existed ? `  backup: ${settingsPath}.bak\n` : '') +
+    (existed ? `  backup: ${backupPathFor(settingsPath)}\n` : '') +
     `  reload Claude Code to see the gauge`
   );
 }

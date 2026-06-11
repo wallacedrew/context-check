@@ -7,6 +7,7 @@ const {
   loadSettings,
   isOurStatusLine,
   hasConflictingStatusLine,
+  backupPathFor,
 } = require('./settings');
 
 async function run(args) {
@@ -42,7 +43,7 @@ async function run(args) {
     return;
   }
 
-  await writeFile(settingsPath + '.bak', JSON.stringify(settings, null, 2) + '\n');
+  await writeFile(backupPathFor(settingsPath), JSON.stringify(settings, null, 2) + '\n');
 
   const next = { ...settings };
   delete next.statusLine;
@@ -51,7 +52,7 @@ async function run(args) {
   const removedOurs = isOurStatusLine(settings);
   print(
     `context-check uninstall: removed statusLine from ${settingsPath}.\n` +
-    `  backup: ${settingsPath}.bak\n` +
+    `  backup: ${backupPathFor(settingsPath)}\n` +
     (removedOurs
       ? `  remember to also: npm uninstall -g context-check`
       : `  removed your custom statusLine (forced); restore from .bak if this was a mistake`)

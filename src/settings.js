@@ -8,6 +8,11 @@ const os = require('node:os');
 const BASIC_COMMAND = 'context-check --line';
 const WITH_DIR_COMMAND = 'context-check --line --with-dir';
 const OUR_COMMANDS = new Set([BASIC_COMMAND, WITH_DIR_COMMAND]);
+const BACKUP_SUFFIX = '.bak';
+
+function backupPathFor(settingsPath) {
+  return settingsPath + BACKUP_SUFFIX;
+}
 
 function commandFor(options) {
   return options && options.withDir ? WITH_DIR_COMMAND : BASIC_COMMAND;
@@ -55,6 +60,8 @@ async function loadSettings(settingsPath) {
 module.exports = {
   BASIC_COMMAND,
   OUR_COMMANDS,
+  BACKUP_SUFFIX,
+  backupPathFor,
   commandFor,
   statusLineFor,
   isOurCommand,
