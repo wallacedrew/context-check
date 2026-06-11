@@ -1,8 +1,6 @@
 'use strict';
 
-const { makeReporter } = require('./reporter');
-
-const { info } = makeReporter('context-check:');
+const { info } = require('./cli-reporter');
 
 const STDIN_TIMEOUT_MS = 200;
 

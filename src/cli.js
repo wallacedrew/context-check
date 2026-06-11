@@ -2,10 +2,8 @@
 
 const SessionState = require('./session-state');
 const SessionStateRenderer = require('./session-state-renderer');
-const { makeReporter } = require('./reporter');
 const { loadStdinOrAdvise } = require('./stdin-reader');
-
-const { info } = makeReporter('context-check:');
+const { info } = require('./cli-reporter');
 
 const SUBCOMMANDS = {
   install: './install',
