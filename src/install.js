@@ -30,15 +30,18 @@ async function run(args) {
   if (isAlreadyConfigured(settings, options)) return info(`statusLine already configured in ${settingsPath}; nothing to do`);
   if (hasConflictingStatusLine(settings) && !force) return fail(conflictMessage(settingsPath, settings.statusLine));
 
+  await prepareSettingsTarget(settingsPath, settings, existed);
+  await writeSettings(settingsPath, withStatusLine(settings, options));
+
+  info(successMessage(settingsPath, existed));
+}
+
+async function prepareSettingsTarget(settingsPath, settings, existed) {
   if (existed) {
     await writeBackup(settingsPath, settings);
   } else {
     await mkdir(path.dirname(settingsPath), { recursive: true });
   }
-
-  await writeSettings(settingsPath, withStatusLine(settings, options));
-
-  info(successMessage(settingsPath, existed));
 }
 
 function conflictMessage(settingsPath, currentStatusLine) {
