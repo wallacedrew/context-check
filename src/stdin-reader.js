@@ -24,11 +24,12 @@ async function readStdinOrNull() {
 
 // stdin reader must time out (~200ms) so the statusline never hangs.
 function readStdin(timeoutMs) {
+  if (process.stdin.isTTY) return Promise.resolve(null);
+  return collectStdinWithTimeout(timeoutMs);
+}
+
+function collectStdinWithTimeout(timeoutMs) {
   return new Promise((resolve) => {
-    if (process.stdin.isTTY) {
-      resolve(null);
-      return;
-    }
     let accumulated = '';
     let hasResolved = false;
     const finish = (result) => {
@@ -37,11 +38,12 @@ function readStdin(timeoutMs) {
       clearTimeout(timeoutHandle);
       resolve(result);
     };
-    const timeoutHandle = setTimeout(() => finish(accumulated || null), timeoutMs);
+    const finishWithAccumulated = () => finish(accumulated || null);
+    const timeoutHandle = setTimeout(finishWithAccumulated, timeoutMs);
 
     process.stdin.setEncoding('utf8');
     process.stdin.on('data', (chunk) => { accumulated += chunk; });
-    process.stdin.on('end', () => finish(accumulated || null));
+    process.stdin.on('end', finishWithAccumulated);
     process.stdin.on('error', () => finish(null));
   });
 }
