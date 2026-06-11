@@ -12,41 +12,25 @@ const {
 } = require('./settings');
 const { makeReporter } = require('./reporter');
 
-const report = makeReporter('context-check uninstall:');
+const { info, fail } = makeReporter('context-check uninstall:');
 
 async function run(args) {
   const settingsPath = resolveSettingsPath(args);
   const force = args.includes('--force');
 
   const loadResult = await loadSettings(settingsPath);
-  if (loadResult.error) {
-    report(loadResult.error);
-    process.exitCode = 1;
-    return;
-  }
+  if (loadResult.error) return fail(loadResult.error);
 
   const { settings, existed } = loadResult;
 
-  if (!existed) {
-    report(`${settingsPath} does not exist; nothing to do`);
-    return;
-  }
-
-  if (settings.statusLine == null) {
-    report(`no statusLine configured in ${settingsPath}; nothing to do`);
-    return;
-  }
-
-  if (hasConflictingStatusLine(settings) && !force) {
-    report(conflictMessage(settingsPath, settings.statusLine));
-    process.exitCode = 1;
-    return;
-  }
+  if (!existed) return info(`${settingsPath} does not exist; nothing to do`);
+  if (settings.statusLine == null) return info(`no statusLine configured in ${settingsPath}; nothing to do`);
+  if (hasConflictingStatusLine(settings) && !force) return fail(conflictMessage(settingsPath, settings.statusLine));
 
   await writeBackup(settingsPath, settings);
   await writeSettings(settingsPath, withoutStatusLine(settings));
 
-  report(successMessage(settingsPath, isOurStatusLine(settings)));
+  info(successMessage(settingsPath, isOurStatusLine(settings)));
 }
 
 function conflictMessage(settingsPath, currentStatusLine) {

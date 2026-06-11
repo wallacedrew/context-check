@@ -15,7 +15,7 @@ const {
 } = require('./settings');
 const { makeReporter } = require('./reporter');
 
-const report = makeReporter('context-check install:');
+const { info, fail } = makeReporter('context-check install:');
 
 async function run(args) {
   const settingsPath = resolveSettingsPath(args);
@@ -23,24 +23,12 @@ async function run(args) {
   const options = { withDir: args.includes('--with-dir') };
 
   const loadResult = await loadSettings(settingsPath);
-  if (loadResult.error) {
-    report(loadResult.error);
-    process.exitCode = 1;
-    return;
-  }
+  if (loadResult.error) return fail(loadResult.error);
 
   const { settings, existed } = loadResult;
 
-  if (isAlreadyConfigured(settings, options)) {
-    report(`statusLine already configured in ${settingsPath}; nothing to do`);
-    return;
-  }
-
-  if (hasConflictingStatusLine(settings) && !force) {
-    report(conflictMessage(settingsPath, settings.statusLine));
-    process.exitCode = 1;
-    return;
-  }
+  if (isAlreadyConfigured(settings, options)) return info(`statusLine already configured in ${settingsPath}; nothing to do`);
+  if (hasConflictingStatusLine(settings) && !force) return fail(conflictMessage(settingsPath, settings.statusLine));
 
   if (existed) {
     await writeBackup(settingsPath, settings);
@@ -50,7 +38,7 @@ async function run(args) {
 
   await writeSettings(settingsPath, withStatusLine(settings, options));
 
-  report(successMessage(settingsPath, existed));
+  info(successMessage(settingsPath, existed));
 }
 
 function conflictMessage(settingsPath, currentStatusLine) {
