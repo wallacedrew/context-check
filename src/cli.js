@@ -1,6 +1,7 @@
 'use strict';
 
 const SessionState = require('./session-state');
+const SessionStateRenderer = require('./session-state-renderer');
 
 const STDIN_TIMEOUT_MS = 200;
 
@@ -25,7 +26,7 @@ async function main() {
 
   if (demoMode) {
     const demoState = SessionState.demo({ withDir });
-    tryOr(() => process.stdout.write(demoState.render(lineMode)), 'render error');
+    tryOr(() => process.stdout.write(new SessionStateRenderer(demoState).render(lineMode)), 'render error');
     return;
   }
 
@@ -38,7 +39,7 @@ async function main() {
   const state = tryOr(() => SessionState.fromInput(input, { withDir }), 'could not read session state');
   if (state === null) return;
 
-  tryOr(() => process.stdout.write(state.render(lineMode)), 'render error');
+  tryOr(() => process.stdout.write(new SessionStateRenderer(state).render(lineMode)), 'render error');
 }
 
 async function loadStdinOrAdvise() {

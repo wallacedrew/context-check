@@ -2,7 +2,6 @@
 
 const path = require('node:path');
 
-const { ANSI, color, dim } = require('./ansi');
 const { isFiniteNumber, isNonEmptyString, clampPercent } = require('./predicates');
 const FillPercent = require('./fill-percent');
 const { resolveFill } = require('./resolve-fill');
@@ -12,8 +11,6 @@ const { resolveTurns } = require('./transcript');
 const Strain = require('./strain');
 const Zone = require('./zones');
 
-const FULL_BAR_WIDTH = 20;
-const LINE_BAR_WIDTH = 10;
 const DEFAULT_AUTO_COMPACT_THRESHOLD = 80;
 
 class SessionState {
@@ -52,33 +49,6 @@ class SessionState {
       dir: options.withDir ? 'my-project' : null,
     });
   }
-
-  render(lineMode) {
-    return (lineMode ? this.renderLine() : this.renderFull()) + '\n';
-  }
-
-  renderFull() {
-    const lines = [];
-    lines.push(prefixWithDir(this.dir, this.model));
-    lines.push(`${renderBar(FULL_BAR_WIDTH, this.fill, this.zone)}  ${this.fill.label()}${this.source.tag()}`);
-    lines.push(dim(`turns: ${this.turns.label()}`));
-    lines.push(`zone: ${this.zone.paint(this.zone.name)}`);
-    lines.push(this.zone.advice);
-    if (this.autoCompactReached) {
-      lines.push(autoCompactWarnLine(this.autoCompactThreshold));
-    }
-    lines.push(dim(`drift est. uses ${Strain.FILL_COEF}·fill + ${Strain.DEPTH_COEF}·depth — a hypothesis, not measured.`));
-    return lines.join('\n');
-  }
-
-  renderLine() {
-    const head = prefixWithDir(this.dir, this.model);
-    return `${head} ${renderBar(LINE_BAR_WIDTH, this.fill, this.zone)} ${this.fill.label()} ${this.zone.paint(this.zone.name)}${warnSuffix(this.autoCompactReached)}`;
-  }
-}
-
-function prefixWithDir(dir, head) {
-  return dir ? `${dir} | ${head}` : head;
 }
 
 function resolveDir(input) {
@@ -100,18 +70,6 @@ function resolveAutoCompactThreshold(input) {
   const raw = contextWindow && contextWindow.auto_compact_threshold_percent;
   if (isFiniteNumber(raw)) return clampPercent(Math.round(raw));
   return DEFAULT_AUTO_COMPACT_THRESHOLD;
-}
-
-function renderBar(width, fill, zone) {
-  return zone.paint(fill.barString(width));
-}
-
-function warnSuffix(autoCompactReached) {
-  return autoCompactReached ? ' ⚠' : '';
-}
-
-function autoCompactWarnLine(threshold) {
-  return color(ANSI.yellow, `⚠ auto-compact threshold (${threshold}%) reached`);
 }
 
 module.exports = SessionState;
