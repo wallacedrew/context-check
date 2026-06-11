@@ -5,18 +5,19 @@ const SessionStateRenderer = require('./session-state-renderer');
 
 const STDIN_TIMEOUT_MS = 200;
 
+const SUBCOMMANDS = {
+  install: './install',
+  uninstall: './uninstall',
+};
+
 // Every failure path must degrade to a single line and exit 0 — this runs
 // in a statusline and must NEVER break the prompt.
 async function main() {
   const cliArgs = process.argv.slice(2);
 
-  if (cliArgs[0] === 'install') {
-    await require('./install').run(cliArgs.slice(1));
-    return;
-  }
-
-  if (cliArgs[0] === 'uninstall') {
-    await require('./uninstall').run(cliArgs.slice(1));
+  const subcommandModule = SUBCOMMANDS[cliArgs[0]];
+  if (subcommandModule) {
+    await require(subcommandModule).run(cliArgs.slice(1));
     return;
   }
 
