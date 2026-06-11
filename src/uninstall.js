@@ -1,13 +1,14 @@
 'use strict';
 
-const { writeFile } = require('node:fs/promises');
-
 const {
   resolveSettingsPath,
   loadSettings,
   isOurStatusLine,
   hasConflictingStatusLine,
   backupPathFor,
+  writeSettings,
+  writeBackup,
+  withoutStatusLine,
 } = require('./settings');
 const { makeReporter } = require('./reporter');
 
@@ -46,11 +47,8 @@ async function run(args) {
     return;
   }
 
-  await writeFile(backupPathFor(settingsPath), JSON.stringify(settings, null, 2) + '\n');
-
-  const next = { ...settings };
-  delete next.statusLine;
-  await writeFile(settingsPath, JSON.stringify(next, null, 2) + '\n');
+  await writeBackup(settingsPath, settings);
+  await writeSettings(settingsPath, withoutStatusLine(settings));
 
   const removedOurs = isOurStatusLine(settings);
   report(

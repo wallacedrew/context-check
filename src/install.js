@@ -1,15 +1,17 @@
 'use strict';
 
-const { writeFile, mkdir } = require('node:fs/promises');
+const { mkdir } = require('node:fs/promises');
 const path = require('node:path');
 
 const {
-  statusLineFor,
   resolveSettingsPath,
   loadSettings,
   isAlreadyConfigured,
   hasConflictingStatusLine,
   backupPathFor,
+  writeSettings,
+  writeBackup,
+  withStatusLine,
 } = require('./settings');
 const { makeReporter } = require('./reporter');
 
@@ -45,13 +47,12 @@ async function run(args) {
   }
 
   if (existed) {
-    await writeFile(backupPathFor(settingsPath), JSON.stringify(settings, null, 2) + '\n');
+    await writeBackup(settingsPath, settings);
   } else {
     await mkdir(path.dirname(settingsPath), { recursive: true });
   }
 
-  const next = { ...settings, statusLine: statusLineFor(options) };
-  await writeFile(settingsPath, JSON.stringify(next, null, 2) + '\n');
+  await writeSettings(settingsPath, withStatusLine(settings, options));
 
   report(
     `wrote statusLine to ${settingsPath}.\n` +

@@ -1,6 +1,6 @@
 'use strict';
 
-const { readFile } = require('node:fs/promises');
+const { readFile, writeFile } = require('node:fs/promises');
 const { existsSync } = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
@@ -57,6 +57,23 @@ async function loadSettings(settingsPath) {
   }
 }
 
+async function writeSettings(settingsPath, settings) {
+  await writeFile(settingsPath, JSON.stringify(settings, null, 2) + '\n');
+}
+
+async function writeBackup(settingsPath, settings) {
+  await writeSettings(backupPathFor(settingsPath), settings);
+}
+
+function withoutStatusLine(settings) {
+  const { statusLine: _removed, ...rest } = settings;
+  return rest;
+}
+
+function withStatusLine(settings, options) {
+  return { ...settings, statusLine: statusLineFor(options) };
+}
+
 module.exports = {
   BASIC_COMMAND,
   OUR_COMMANDS,
@@ -70,4 +87,8 @@ module.exports = {
   hasConflictingStatusLine,
   resolveSettingsPath,
   loadSettings,
+  writeSettings,
+  writeBackup,
+  withoutStatusLine,
+  withStatusLine,
 };
