@@ -2,6 +2,9 @@
 
 const SessionState = require('./session-state');
 const SessionStateRenderer = require('./session-state-renderer');
+const { makeReporter } = require('./reporter');
+
+const { info } = makeReporter('context-check:');
 
 const STDIN_TIMEOUT_MS = 200;
 
@@ -52,7 +55,7 @@ async function loadStdinOrAdvise() {
   if (process.stdin.isTTY) {
     process.stdout.write(usageHint());
   } else {
-    reportError('no input on stdin');
+    info('no input on stdin');
   }
   return null;
 }
@@ -64,11 +67,7 @@ async function readStdinOrNull() {
 
 function tryOrReport(action, errorMessage) {
   try { return action(); }
-  catch (_) { reportError(errorMessage); return null; }
-}
-
-function reportError(message) {
-  process.stdout.write(`context-check: ${message}\n`);
+  catch (_) { info(errorMessage); return null; }
 }
 
 // stdin reader must time out (~200ms) so the statusline never hangs.
