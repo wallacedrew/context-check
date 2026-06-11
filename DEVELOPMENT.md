@@ -8,19 +8,27 @@ architecture, and contributor workflow. End-user docs live in
 
 ## Source layout
 
+Organized by feature, not by framework layer. The two domains are `gauge/`
+(what runs at statusline-render time) and `install/` (what wires the gauge
+into `~/.claude/settings.json`). `shell/` is the I/O ring both use.
+
 | File | Role |
 |---|---|
 | `src/context-check.js` | Bin entrypoint. Loads `cli.js` and dispatches. |
 | `src/cli.js` | Top-level dispatch — `install`, `uninstall`, or default render. |
-| `src/install.js` | `context-check install` — writes the `statusLine` block into `~/.claude/settings.json`. |
-| `src/uninstall.js` | `context-check uninstall` — removes the `statusLine` block, backs up. |
-| `src/settings.js` | Shared settings helpers (path resolution, load + parse, statusLine detection). |
-| `src/session-state.js` | Parses the Claude session JSON into a renderable state. |
-| `src/fill-percent.js`, `src/fill-source.js`, `src/resolve-fill.js` | Fill measurement and provenance — which JSON field gave us the percentage. |
-| `src/turns.js`, `src/transcript.js` | Turn-depth counting from the transcript file. |
-| `src/strain.js`, `src/zones.js` | Strain formula and zone classification. |
-| `src/predicates.js` | Shared predicate helpers. |
-| `src/ansi.js` | ANSI color/format helpers. Respects `NO_COLOR`. |
+| `src/gauge/session-state.js` | Parses the Claude session JSON into a renderable state. |
+| `src/gauge/session-state-renderer.js` | Humble Object that paints a `SessionState` as the statusline string. |
+| `src/gauge/fill-percent.js`, `src/gauge/fill-source.js`, `src/gauge/resolve-fill.js` | Fill measurement and provenance — which JSON field gave us the percentage. |
+| `src/gauge/turns.js`, `src/gauge/transcript.js` | Turn-depth counting from the transcript file. |
+| `src/gauge/strain.js`, `src/gauge/zones.js` | Strain formula and zone classification. |
+| `src/gauge/predicates.js` | Shared predicate helpers. |
+| `src/gauge/ansi.js` | ANSI color/format helpers. Respects `NO_COLOR`. |
+| `src/install/install.js` | `context-check install` — writes the `statusLine` block into `~/.claude/settings.json`. |
+| `src/install/uninstall.js` | `context-check uninstall` — removes the `statusLine` block, backs up. |
+| `src/install/settings.js` | Settings port — path resolution, load + parse, statusLine detection, backup + write. |
+| `src/shell/stdin-reader.js` | stdin transport with a hard timeout so the statusline never hangs. |
+| `src/shell/cli-reporter.js` | Pre-configured reporter for CLI output (`context-check:` prefix). |
+| `src/shell/reporter.js` | `makeReporter(prefix)` factory — `info` / `fail` over stdout. |
 
 ---
 

@@ -13,7 +13,7 @@ const {
   writeBackup,
   withStatusLine,
 } = require('./settings');
-const { makeReporter } = require('./reporter');
+const { makeReporter } = require('../shell/reporter');
 
 const { info, fail } = makeReporter('context-check install:');
 

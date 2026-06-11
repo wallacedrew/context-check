@@ -10,7 +10,7 @@ const {
   writeBackup,
   withoutStatusLine,
 } = require('./settings');
-const { makeReporter } = require('./reporter');
+const { makeReporter } = require('../shell/reporter');
 
 const { info, fail } = makeReporter('context-check uninstall:');
 

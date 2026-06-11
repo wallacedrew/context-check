@@ -1,13 +1,13 @@
 'use strict';
 
-const SessionState = require('./session-state');
-const SessionStateRenderer = require('./session-state-renderer');
-const { loadStdinOrAdvise } = require('./stdin-reader');
-const { info } = require('./cli-reporter');
+const SessionState = require('./gauge/session-state');
+const SessionStateRenderer = require('./gauge/session-state-renderer');
+const { loadStdinOrAdvise } = require('./shell/stdin-reader');
+const { info } = require('./shell/cli-reporter');
 
 const SUBCOMMANDS = {
-  install: './install',
-  uninstall: './uninstall',
+  install: './install/install',
+  uninstall: './install/uninstall',
 };
 
 // Every failure path must degrade to a single line and exit 0 — this runs
