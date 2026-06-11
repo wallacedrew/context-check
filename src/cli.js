@@ -24,20 +24,21 @@ async function main() {
   const withDir = cliArgs.includes('--with-dir');
 
   if (demoMode) {
-    renderOrReport(SessionState.demo({ withDir }), lineMode);
+    const demoState = SessionState.demo({ withDir });
+    tryOr(() => process.stdout.write(demoState.render(lineMode)), 'render error');
     return;
   }
 
   const rawStdin = await loadStdinOrAdvise();
   if (rawStdin === null) return;
 
-  const input = parseInputOrReport(rawStdin);
+  const input = tryOr(() => JSON.parse(rawStdin), 'invalid JSON on stdin');
   if (input === null) return;
 
-  const state = buildStateOrReport(input, { withDir });
+  const state = tryOr(() => SessionState.fromInput(input, { withDir }), 'could not read session state');
   if (state === null) return;
 
-  renderOrReport(state, lineMode);
+  tryOr(() => process.stdout.write(state.render(lineMode)), 'render error');
 }
 
 async function loadStdinOrAdvise() {
@@ -56,19 +57,9 @@ async function readStdinOrNull() {
   catch (_) { return null; }
 }
 
-function parseInputOrReport(rawStdin) {
-  try { return JSON.parse(rawStdin); }
-  catch (_) { reportError('invalid JSON on stdin'); return null; }
-}
-
-function buildStateOrReport(input, options) {
-  try { return SessionState.fromInput(input, options); }
-  catch (_) { reportError('could not read session state'); return null; }
-}
-
-function renderOrReport(state, lineMode) {
-  try { process.stdout.write(state.render(lineMode)); }
-  catch (_) { reportError('render error'); }
+function tryOr(action, errorMessage) {
+  try { return action(); }
+  catch (_) { reportError(errorMessage); return null; }
 }
 
 function reportError(message) {
