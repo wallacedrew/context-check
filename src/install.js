@@ -11,6 +11,9 @@ const {
   hasConflictingStatusLine,
   backupPathFor,
 } = require('./settings');
+const { makeReporter } = require('./reporter');
+
+const report = makeReporter('context-check install:');
 
 async function run(args) {
   const settingsPath = resolveSettingsPath(args);
@@ -19,7 +22,7 @@ async function run(args) {
 
   const loadResult = await loadSettings(settingsPath);
   if (loadResult.error) {
-    print(`context-check install: ${loadResult.error}`);
+    report(loadResult.error);
     process.exitCode = 1;
     return;
   }
@@ -27,13 +30,13 @@ async function run(args) {
   const { settings, existed } = loadResult;
 
   if (isAlreadyConfigured(settings, options)) {
-    print(`context-check install: statusLine already configured in ${settingsPath}; nothing to do`);
+    report(`statusLine already configured in ${settingsPath}; nothing to do`);
     return;
   }
 
   if (hasConflictingStatusLine(settings) && !force) {
-    print(
-      `context-check install: ${settingsPath} already has a different statusLine.\n` +
+    report(
+      `${settingsPath} already has a different statusLine.\n` +
       `  current: ${JSON.stringify(settings.statusLine)}\n` +
       `  rerun with --force to overwrite`
     );
@@ -50,15 +53,11 @@ async function run(args) {
   const next = { ...settings, statusLine: statusLineFor(options) };
   await writeFile(settingsPath, JSON.stringify(next, null, 2) + '\n');
 
-  print(
-    `context-check install: wrote statusLine to ${settingsPath}.\n` +
+  report(
+    `wrote statusLine to ${settingsPath}.\n` +
     (existed ? `  backup: ${backupPathFor(settingsPath)}\n` : '') +
     `  reload Claude Code to see the gauge`
   );
-}
-
-function print(message) {
-  process.stdout.write(message + '\n');
 }
 
 module.exports = { run };

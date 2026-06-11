@@ -9,6 +9,9 @@ const {
   hasConflictingStatusLine,
   backupPathFor,
 } = require('./settings');
+const { makeReporter } = require('./reporter');
+
+const report = makeReporter('context-check uninstall:');
 
 async function run(args) {
   const settingsPath = resolveSettingsPath(args);
@@ -16,7 +19,7 @@ async function run(args) {
 
   const loadResult = await loadSettings(settingsPath);
   if (loadResult.error) {
-    print(`context-check uninstall: ${loadResult.error}`);
+    report(loadResult.error);
     process.exitCode = 1;
     return;
   }
@@ -24,18 +27,18 @@ async function run(args) {
   const { settings, existed } = loadResult;
 
   if (!existed) {
-    print(`context-check uninstall: ${settingsPath} does not exist; nothing to do`);
+    report(`${settingsPath} does not exist; nothing to do`);
     return;
   }
 
   if (settings.statusLine == null) {
-    print(`context-check uninstall: no statusLine configured in ${settingsPath}; nothing to do`);
+    report(`no statusLine configured in ${settingsPath}; nothing to do`);
     return;
   }
 
   if (hasConflictingStatusLine(settings) && !force) {
-    print(
-      `context-check uninstall: ${settingsPath} has a different statusLine.\n` +
+    report(
+      `${settingsPath} has a different statusLine.\n` +
       `  current: ${JSON.stringify(settings.statusLine)}\n` +
       `  rerun with --force to remove it anyway`
     );
@@ -50,17 +53,13 @@ async function run(args) {
   await writeFile(settingsPath, JSON.stringify(next, null, 2) + '\n');
 
   const removedOurs = isOurStatusLine(settings);
-  print(
-    `context-check uninstall: removed statusLine from ${settingsPath}.\n` +
+  report(
+    `removed statusLine from ${settingsPath}.\n` +
     `  backup: ${backupPathFor(settingsPath)}\n` +
     (removedOurs
       ? `  remember to also: npm uninstall -g context-check`
       : `  removed your custom statusLine (forced); restore from .bak if this was a mistake`)
   );
-}
-
-function print(message) {
-  process.stdout.write(message + '\n');
 }
 
 module.exports = { run };
