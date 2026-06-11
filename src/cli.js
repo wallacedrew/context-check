@@ -26,8 +26,7 @@ async function main() {
   const withDir = cliArgs.includes('--with-dir');
 
   if (demoMode) {
-    const demoState = SessionState.demo({ withDir });
-    tryOr(() => process.stdout.write(new SessionStateRenderer(demoState).render(lineMode)), 'render error');
+    renderState(SessionState.demo({ withDir }), lineMode);
     return;
   }
 
@@ -40,6 +39,10 @@ async function main() {
   const state = tryOr(() => SessionState.fromInput(input, { withDir }), 'could not read session state');
   if (state === null) return;
 
+  renderState(state, lineMode);
+}
+
+function renderState(state, lineMode) {
   tryOr(() => process.stdout.write(new SessionStateRenderer(state).render(lineMode)), 'render error');
 }
 
