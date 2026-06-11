@@ -37,11 +37,7 @@ async function run(args) {
   }
 
   if (hasConflictingStatusLine(settings) && !force) {
-    report(
-      `${settingsPath} already has a different statusLine.\n` +
-      `  current: ${JSON.stringify(settings.statusLine)}\n` +
-      `  rerun with --force to overwrite`
-    );
+    report(conflictMessage(settingsPath, settings.statusLine));
     process.exitCode = 1;
     return;
   }
@@ -54,11 +50,20 @@ async function run(args) {
 
   await writeSettings(settingsPath, withStatusLine(settings, options));
 
-  report(
-    `wrote statusLine to ${settingsPath}.\n` +
-    (existed ? `  backup: ${backupPathFor(settingsPath)}\n` : '') +
-    `  reload Claude Code to see the gauge`
-  );
+  report(successMessage(settingsPath, existed));
+}
+
+function conflictMessage(settingsPath, currentStatusLine) {
+  return `${settingsPath} already has a different statusLine.\n` +
+    `  current: ${JSON.stringify(currentStatusLine)}\n` +
+    `  rerun with --force to overwrite`;
+}
+
+function successMessage(settingsPath, existed) {
+  const backupLine = existed ? `  backup: ${backupPathFor(settingsPath)}\n` : '';
+  return `wrote statusLine to ${settingsPath}.\n` +
+    backupLine +
+    `  reload Claude Code to see the gauge`;
 }
 
 module.exports = { run };

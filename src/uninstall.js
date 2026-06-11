@@ -38,11 +38,7 @@ async function run(args) {
   }
 
   if (hasConflictingStatusLine(settings) && !force) {
-    report(
-      `${settingsPath} has a different statusLine.\n` +
-      `  current: ${JSON.stringify(settings.statusLine)}\n` +
-      `  rerun with --force to remove it anyway`
-    );
+    report(conflictMessage(settingsPath, settings.statusLine));
     process.exitCode = 1;
     return;
   }
@@ -50,14 +46,22 @@ async function run(args) {
   await writeBackup(settingsPath, settings);
   await writeSettings(settingsPath, withoutStatusLine(settings));
 
-  const removedOurs = isOurStatusLine(settings);
-  report(
-    `removed statusLine from ${settingsPath}.\n` +
+  report(successMessage(settingsPath, isOurStatusLine(settings)));
+}
+
+function conflictMessage(settingsPath, currentStatusLine) {
+  return `${settingsPath} has a different statusLine.\n` +
+    `  current: ${JSON.stringify(currentStatusLine)}\n` +
+    `  rerun with --force to remove it anyway`;
+}
+
+function successMessage(settingsPath, removedOurs) {
+  const tail = removedOurs
+    ? `  remember to also: npm uninstall -g context-check`
+    : `  removed your custom statusLine (forced); restore from .bak if this was a mistake`;
+  return `removed statusLine from ${settingsPath}.\n` +
     `  backup: ${backupPathFor(settingsPath)}\n` +
-    (removedOurs
-      ? `  remember to also: npm uninstall -g context-check`
-      : `  removed your custom statusLine (forced); restore from .bak if this was a mistake`)
-  );
+    tail;
 }
 
 module.exports = { run };
